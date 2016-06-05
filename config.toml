@@ -1,0 +1,32 @@
+baseurl = "https://sarafian.github.io/RyanAirWeekend/"
+canonifyurls = true
+languageCode = "en-us"
+title = "RyanAir Weekend"
+theme = "ryanair-hugo-future-imperfect"
+googleAnalytics = "UA-78815014-1"
+
+[params]
+    description          = "Personal site of Alex Sarafian"
+    # This will appear on the top left of the navigation bar
+    navbarTitle          = "Root"
+
+# Optional Params
+    loadFavicon          = false
+
+# parms.intro will appear on the sidebar
+# This is optional, but it's suggested to use
+[params.intro]
+    header    = "Alex Sarafian"
+
+    paragraph = "Space focused on .NET, Powershell and the Windows ecosystem"
+    
+    # disclaimer = "This is Alex's personal space and blog. The views and opinions expressed here are his, and not those of his employer."
+
+    # about     = "Technology enthusiast with focus on the Windows ecosystem"
+
+# Set up your menu items in the navigation bar
+# You can use identifier to prepend a font awesome icon to your text
+[[menu.main]]
+    name = "Home"
+    url = "/Index/"
+    weight = 1

@@ -1,0 +1,21 @@
+<article class="post">
+    {{ .Render "header" }}
+
+    {{ .Render "featured" }}
+    <div id="content">
+        {{ .Content }}
+    </div>
+	{{ with .Params.extrainfo }}
+		<div>
+			<p>{{ . | safeHTML}}</p>
+		</div>
+	{{ end }}
+
+    <footer>
+		<section id="social-share">
+			<ul class="icons">
+				{{ partial "share-links" . }}
+			</ul>
+		</section>
+    </footer>
+</article>
