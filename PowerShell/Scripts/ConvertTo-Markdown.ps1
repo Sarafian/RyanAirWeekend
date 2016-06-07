@@ -7,6 +7,8 @@ param (
     $MockHugo=$false
 
 )
+$OutputPath=Resolve-Path $OutputPath
+
 #region import commandlets
 $cmdLetsPath=Resolve-Path "$PSScriptRoot\..\CmdLets"
 
@@ -34,7 +36,7 @@ $weekendSettings=New-WeekendExcursionSettings
 $renderFlightsBlock={
     param(
         [Parameter(Mandatory=$true)]
-        [ValidateSet("ByWeekend","ByFair")]
+        [ValidateSet("ByWeekend","ByFare")]
         [string]$GroupMethod,
         [Parameter(Mandatory=$true)]
         [psobject[]]$flights
@@ -50,7 +52,8 @@ $renderFlightsBlock={
         $destinationCountry=$flights| Select-Object -ExpandProperty DestinationCountry -Unique
         
         $relativeFolderPath="From\$originCountry\$originCity-$origin\To\$destinationCountry"
-        $mdRelativePath=Join-Path $relativeFolderPath "$destinationCity-$destination.Flights.$GroupMethod.md"           
+        $mdRelativeFileName="$destinationCity-$destination.Flights.$GroupMethod.md"
+        $mdRelativePath=Join-Path $relativeFolderPath $mdRelativeFileName           
 
         $mdPath=Join-Path $OutputPath $mdRelativePath
 
@@ -59,10 +62,33 @@ $renderFlightsBlock={
         switch ($GroupMethod)
         {
             'ByWeekend' {$description+="weekend"}
-            'ByFair' {$description+="fair price"}
+            'ByFare' {$description+="Fare price"}
+        }
+        
+        $metadata=@{
+            origin=$origin
+            originCity=$originCity
+            originCountry=$originCountry
+            destination=$destination
+            destinationCity=$destinationCity
+            destinationCountry=$destinationCountry
         }
 
-        $markdown=New-HugoFrontMatter -Title $title -Description $description -IsRoot $false
+        switch ($GroupMethod)
+        {
+            'ByWeekend' {
+                $metadata["Organize"]="By weekend"
+                $metadata["AlternateTitle"]="By fare"
+                $metadata["AlternateFile"]=$mdRelativeFileName.Replace($GroupMethod,"ByFare")
+            }
+            'ByFare' {
+                $metadata["Organize"]="By fare"
+                $metadata["AlternateTitle"]="By weekend"
+                $metadata["AlternateFile"]=$mdRelativeFileName.Replace($GroupMethod,"ByWeekend")
+            }
+        }
+
+        $markdown=New-HugoFrontMatter -Title $title -Description $description -IsRoot $false -Metadata $metadata
 
         $markdown+=New-MDHeader "Price zones" -Level 2
         $markdown+=New-MDParagraph
@@ -134,9 +160,9 @@ $renderFlightsBlock={
             }
         }
 
-        if($GroupMethod -eq "ByFair")
+        if($GroupMethod -eq "ByFare")
         {
-            $markdown+=New-MDHeader "Ordered by fair"
+            $markdown+=New-MDHeader "Ordered by Fare"
             $markdown+=New-MDParagraph
             $table=$flights|Sort-Object -Property RegularFare|Select-Object -Property @{Name="Weekend";Expression={
                 "$($_.Friday.AddDays(1).Day)-$($_.Friday.AddDays(2).Day)/$($_.Friday.Month)/$($_.Friday.Year)"
@@ -287,22 +313,22 @@ try
             $relativeFolderPath="From\$($originLocation.Country)\$($originLocation.City)-$origin\To\$($destinationLocation.Country)"
             $mdRelativePath=Join-Path $relativeFolderPath "$($destinationLocation.City)-$_.Flights.ByWeekend.md" |ConvertTo-HugoRef          
             New-MDLink -Text "Open Flights" -Link $mdRelativePath
-        }},@{Name="Ordered By Fair";Expression={
+        }},@{Name="Ordered By Fare";Expression={
             $destinationLocation=$processedLocations|Where-Object -Property IATA -EQ $_
             $relativeFolderPath="From\$($originLocation.Country)\$($originLocation.City)-$origin\To\$($destinationLocation.Country)"
-            $mdRelativePath=Join-Path $relativeFolderPath "$($destinationLocation.City)-$_.Flights.ByFair.md" |ConvertTo-HugoRef
+            $mdRelativePath=Join-Path $relativeFolderPath "$($destinationLocation.City)-$_.Flights.ByFare.md" |ConvertTo-HugoRef
             New-MDLink -Text "Open Flights" -Link $mdRelativePath
         }}
 
         $markdown+=New-MDHeader "Destinations from $($originLocation.City) ($origin) in $($originLocation.Country)" -Level 2
         $markdown+=New-MDParagraph
-        $markdown+=$table |Sort-Object Country | New-MDTable -Columns ([ordered]@{Destination="left";"Grouped By Weekend"="right";"Ordered By Fair"="right"})
+        $markdown+=$table |Sort-Object Country | New-MDTable -Columns ([ordered]@{Destination="left";"Grouped By Weekend"="right";"Ordered By Fare"="right"})
         $markdown+=New-MDParagraph
 
     }
     $flights|Group-Object Origin,Destination|ForEach-Object {
         Invoke-Command -ScriptBlock $renderFlightsBlock -ArgumentList ("ByWeekend",$_.Group)
-        Invoke-Command -ScriptBlock $renderFlightsBlock -ArgumentList ("ByFair",$_.Group)
+        Invoke-Command -ScriptBlock $renderFlightsBlock -ArgumentList ("ByFare",$_.Group)
     }
     $markdown+=New-MDParagraph
 }

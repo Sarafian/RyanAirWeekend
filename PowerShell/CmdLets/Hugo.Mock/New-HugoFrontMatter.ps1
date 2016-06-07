@@ -15,7 +15,11 @@ function New-HugoFrontMatter {
             Mandatory = $true
         )]
         [ValidateNotNullOrEmpty()]
-        [boolean]$IsRoot
+        [boolean]$IsRoot,
+        [Parameter(
+            Mandatory = $false
+        )]
+        $Metadata=$null
     )
     Begin {
         $markdown=""

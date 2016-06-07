@@ -15,7 +15,11 @@ function New-HugoFrontMatter {
             Mandatory = $true
         )]
         [ValidateNotNullOrEmpty()]
-        [boolean]$IsRoot
+        [boolean]$IsRoot,
+        [Parameter(
+            Mandatory = $false
+        )]
+        $Metadata=$null
     )
     Begin {
         $markdown=New-MDParagraph "+++"
@@ -25,6 +29,13 @@ function New-HugoFrontMatter {
         $markdown+=New-MDParagraph ("title = ""$Title""")
         $markdown+=New-MDParagraph ("description = ""$Description""")
         $markdown+=New-MDParagraph ("root = $($IsRoot.ToString().ToLowerInvariant())")
+        if($Metadata)
+        {
+            foreach ($h in $Metadata.Keys) 
+            {
+                $markdown+=New-MDParagraph ("$h = ""$($Metadata.Item($h))""")
+            }
+        }
     }
 
     End {
