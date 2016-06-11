@@ -227,6 +227,12 @@ $renderFlightsBlock={
 #region Index.md
 try
 {
+    $markdownPSCommand=Get-Command New-MDParagraph -ErrorAction SilentlyContinue
+	if(-not ($markdownPSCommand)) {
+		Write-Warning "MarkdownPS module not found"
+		$env:PSModulePath+=";$PSScriptRoot\Modules"
+	}
+
     $date=Get-Date -Format "yyyyMMdd"
     $exportPath=Join-Path $env:TEMP $date
 

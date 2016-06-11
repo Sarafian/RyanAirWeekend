@@ -9,6 +9,9 @@ param (
     [switch]
     $AsParallel=$false
 )
+
+
+
 Get-Job -Name "Export.*" |Remove-Job -Force
 
 #region import commandlets
@@ -134,6 +137,13 @@ $exportBlock={
 
 try
 {
+	$ryanAirPSCommand=Get-Command Get-RyanAirSchedules -ErrorAction SilentlyContinue
+
+	if(-not ($ryanAirPSCommand)) {
+		Write-Warning "RyanAirPS module not found"
+		$env:PSModulePath+=";$PSScriptRoot\Modules"
+	}
+
     $airports=Get-RyanAirCommon -Type Airports
     $airports|ConvertTo-Json |Out-File (Join-Path $exportPath "Airports.json")
     $cities=Get-RyanAirCommon -Type Cities
