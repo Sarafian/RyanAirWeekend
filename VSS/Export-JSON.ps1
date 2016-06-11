@@ -12,13 +12,12 @@ param (
 Get-Job -Name "Export.*" |Remove-Job -Force
 
 #region import commandlets
-$cmdLetsPath=Resolve-Path "$PSScriptRoot\..\CmdLets"
 
-. "$cmdLetsPath\Badges\New-DateBadge.ps1"
+. "$PSScriptRoot\CmdLets\Badges\New-DateBadge.ps1"
 
-. "$cmdLetsPath\Date\Get-WeekDay.ps1"
-. "$cmdLetsPath\Date\New-WeekendExcursionSettings.ps1"
-. "$cmdLetsPath\Date\Test-WeekDayZone.ps1"
+. "$PSScriptRoot\CmdLets\Date\Get-WeekDay.ps1"
+. "$PSScriptRoot\CmdLets\Date\New-WeekendExcursionSettings.ps1"
+. "$PSScriptRoot\CmdLets\Date\Test-WeekDayZone.ps1"
 #endregion
 
 $weekendSettings=New-WeekendExcursionSettings

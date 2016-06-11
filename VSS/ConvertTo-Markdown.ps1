@@ -1,18 +1,24 @@
 param (
-    [Parameter(Mandatory=$true)]
-    [string]
-    $OutputPath,
     [Parameter(Mandatory=$false)]
     [switch]
     $MockHugo=$false
-
 )
-$OutputPath=Resolve-Path $OutputPath
+$contentPath=Resolve-Path "$PSScriptRoot\..\content"
+
+if(Test-Path $contentPath)
+{
+    Remove-Item "$contentPath\*" -Recurse -Force
+}
+else
+{
+    New-Item $contentPath -ItemType Directory | Out-Null
+}
+Write-Verbose "$contentPath is ready"
+
 
 #region import commandlets
-$cmdLetsPath=Resolve-Path "$PSScriptRoot\..\CmdLets"
 
-. "$cmdLetsPath\Badges\New-DateBadge.ps1"
+. "$PSScriptRoot\CmdLets\Badges\New-DateBadge.ps1"
 if($MockHugo)
 {
     $hugoFolderName="Hugo.Mock"
@@ -21,12 +27,12 @@ else
 {
     $hugoFolderName="Hugo"
 }
-. "$cmdLetsPath\$hugoFolderName\ConvertTo-HugoRef.ps1"
-. "$cmdLetsPath\$hugoFolderName\New-HugoFrontMatter.ps1"
+. "$PSScriptRoot\CmdLets\$hugoFolderName\ConvertTo-HugoRef.ps1"
+. "$PSScriptRoot\CmdLets\$hugoFolderName\New-HugoFrontMatter.ps1"
 
-. "$cmdLetsPath\Date\Get-WeekDay.ps1"
-. "$cmdLetsPath\Date\New-WeekendExcursionSettings.ps1"
-. "$cmdLetsPath\Date\Test-WeekDayZone.ps1"
+. "$PSScriptRoot\CmdLets\Date\Get-WeekDay.ps1"
+. "$PSScriptRoot\CmdLets\Date\New-WeekendExcursionSettings.ps1"
+. "$PSScriptRoot\CmdLets\Date\Test-WeekDayZone.ps1"
 #endregion
 
 $weekendSettings=New-WeekendExcursionSettings
@@ -55,7 +61,7 @@ $renderFlightsBlock={
         $mdRelativeFileName="$destinationCity-$destination.Flights.$GroupMethod.md"
         $mdRelativePath=Join-Path $relativeFolderPath $mdRelativeFileName           
 
-        $mdPath=Join-Path $OutputPath $mdRelativePath
+        $mdPath=Join-Path $contentPath $mdRelativePath
 
         $title="Weekends from $originCity ($origin) to $destinationCity ($destination)"
         $description="Available weekend excursions from $originCity of $originCountry to $destinationCity of $destinationCountry arranged by "
@@ -267,7 +273,7 @@ try
     }
 
 
-    $mdPath=Join-Path $OutputPath "Index.md"
+    $mdPath=Join-Path $contentPath "Index.md"
     $minMaxDate=$flights|Measure-Object -Property Friday -Maximum -Minimum
     #$minDate=$minMaxDate.Minimum.Value.ToShortDate()
     #$maxDate=$minMaxDate.Maximum.Value.ToShortDate()
