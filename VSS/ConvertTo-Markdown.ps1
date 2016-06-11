@@ -3,6 +3,7 @@ param (
     [switch]
     $MockHugo=$false
 )
+$DebugPreference='continue'
 
 $contentPath="$PSScriptRoot\..\content"
 
@@ -257,6 +258,7 @@ try
     $flightFilePath=Get-ChildItem -Path $exportPath -Exclude @("Airports.json","Cities.json","Countries.json")
     $flights=@()
     $flightFilePath|ForEach-Object {
+        Write-Verbose "Reading $($_.FullName)"
         $flights+=$_|Get-Content|ConvertFrom-Json
         Write-Verbose "Read $($_.FullName)"
     }
