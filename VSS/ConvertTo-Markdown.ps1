@@ -4,7 +4,7 @@ param (
     $MockHugo=$false
 )
 
-$contentPath=Join-Path "$PSScriptRoot\..\content"
+$contentPath="$PSScriptRoot\..\content"
 
 if(Test-Path $contentPath)
 {

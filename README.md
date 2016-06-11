@@ -1,5 +1,11 @@
 # Ryan Air Weekends 
 
+| Branch | Status
+| ---------- | ---------
+| **master** | ![masterstatus](https://asarafian.visualstudio.com/_apis/public/build/definitions/d49ceb99-ba17-40dd-beb5-01203465975d/20/badge)
+| **develop** | ![developstatus](https://asarafian.visualstudio.com/_apis/public/build/definitions/d49ceb99-ba17-40dd-beb5-01203465975d/19/badge)
+
+
 The repository is ![](https://img.shields.io/badge/Important-In%20Progress-orange.svg). Items remaining
 
 - Clear up dependencies
