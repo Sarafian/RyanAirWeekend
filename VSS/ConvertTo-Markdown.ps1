@@ -3,7 +3,8 @@ param (
     [switch]
     $MockHugo=$false
 )
-$contentPath=Resolve-Path "$PSScriptRoot\..\content"
+
+$contentPath=Join-Path "$PSScriptRoot\..\content"
 
 if(Test-Path $contentPath)
 {
@@ -13,6 +14,7 @@ else
 {
     New-Item $contentPath -ItemType Directory | Out-Null
 }
+$contentPath=Resolve-Path $contentPath
 Write-Verbose "$contentPath is ready"
 
 
