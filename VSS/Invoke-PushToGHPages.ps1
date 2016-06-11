@@ -4,6 +4,7 @@ Param (
     [Parameter(Mandatory=$false)]
     [switch]$Push=$false
 )
+If ($PSBoundParameters.Debug -eq $true) { $DebugPreference='continue' }
 
 . $PSScriptRoot\Cmdlets\Git\Invoke-Git.ps1
 

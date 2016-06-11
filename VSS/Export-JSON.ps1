@@ -9,7 +9,7 @@ param (
     [switch]
     $AsParallel=$false
 )
-
+If ($PSBoundParameters.Debug -eq $true) { $DebugPreference='continue' }
 
 Write-Debug "Remove existing Export.* jobs"
 Get-Job -Name "Export.*" |Remove-Job -Force

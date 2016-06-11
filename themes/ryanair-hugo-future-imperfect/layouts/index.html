@@ -3,7 +3,7 @@
     {{ partial "navbar" . }}
     <!-- Main -->
     <div id="main">
-        {{ range first 1 (where .Site.Pages ".Params.root" "=" true) }}
+        {{ range first 1 (where .Site.Pages ".Params.root" "=" "true") }}
             {{ .Render "content-single" }}
             {{ partial "share-menu" . }}
         {{ end }}
