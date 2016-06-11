@@ -3,6 +3,7 @@ param (
     [switch]
     $MockHugo=$false
 )
+If ($PSBoundParameters.Debug -eq $true) { $DebugPreference='continue' }
 
 $contentPath="$PSScriptRoot\..\content"
 

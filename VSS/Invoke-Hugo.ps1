@@ -1,3 +1,5 @@
+If ($PSBoundParameters.Debug -eq $true) { $DebugPreference='continue' }
+
 try
 {
     Push-Location "$PSScriptRoot\.."
