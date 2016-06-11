@@ -22,18 +22,18 @@ function New-HugoFrontMatter {
         $Metadata=$null
     )
     Begin {
-        $markdown=New-MDParagraph "+++"
+        $markdown=New-MDParagraph "+++" -NoNewLine
     }
 
     Process {
-        $markdown+=New-MDParagraph ("title = ""$Title""")
-        $markdown+=New-MDParagraph ("description = ""$Description""")
-        $markdown+=New-MDParagraph ("root = $($IsRoot.ToString().ToLowerInvariant())")
+        $markdown+=New-MDParagraph ("title = ""$Title""") -NoNewLine
+        $markdown+=New-MDParagraph ("description = ""$Description""") -NoNewLine
+        $markdown+=New-MDParagraph ("root = ""$($IsRoot.ToString().ToLowerInvariant())""") -NoNewLine
         if($Metadata)
         {
             foreach ($h in $Metadata.Keys) 
             {
-                $markdown+=New-MDParagraph ("$h = ""$($Metadata.Item($h))""")
+                $markdown+=New-MDParagraph ("$h = ""$($Metadata.Item($h))""") -NoNewLine
             }
         }
     }
