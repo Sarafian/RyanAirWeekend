@@ -19,6 +19,7 @@ Write-Verbose "$contentPath is ready"
 
 
 #region import commandlets
+Write-Debug "Import cmdlets"
 
 . "$PSScriptRoot\CmdLets\Badges\New-DateBadge.ps1"
 if($MockHugo)
@@ -35,10 +36,11 @@ else
 . "$PSScriptRoot\CmdLets\Date\Get-WeekDay.ps1"
 . "$PSScriptRoot\CmdLets\Date\New-WeekendExcursionSettings.ps1"
 . "$PSScriptRoot\CmdLets\Date\Test-WeekDayZone.ps1"
+Write-Verbose "Imported cmdlets"
 #endregion
 
 $weekendSettings=New-WeekendExcursionSettings
-
+Write-Verbose "weekendSettings is ready"
 
 #region process origin
 $renderFlightsBlock={
@@ -51,19 +53,29 @@ $renderFlightsBlock={
     )
     try
     {
+        Write-Debug "GroupMethod=$GroupMethod" 
+        Write-Debug "flights.Count=$($flights.Count)" 
+
         $origin=$flights| Select-Object -ExpandProperty Origin -Unique
         $originCity=$flights| Select-Object -ExpandProperty OriginCity -Unique
         $originCountry=$flights| Select-Object -ExpandProperty OriginCountry -Unique
+        Write-Debug "origin=$origin" 
+        Write-Debug "originCity=$originCity" 
+        Write-Debug "originCountry=$originCountry" 
 
         $destination=$flights| Select-Object -ExpandProperty Destination -Unique
         $destinationCity=$flights| Select-Object -ExpandProperty DestinationCity -Unique
         $destinationCountry=$flights| Select-Object -ExpandProperty DestinationCountry -Unique
+        Write-Debug "destination=$destination" 
+        Write-Debug "destinationCity=$destinationCity" 
+        Write-Debug "destinationCountry=$destinationCountry" 
         
         $relativeFolderPath="From\$originCountry\$originCity-$origin\To\$destinationCountry"
         $mdRelativeFileName="$destinationCity-$destination.Flights.$GroupMethod.md"
         $mdRelativePath=Join-Path $relativeFolderPath $mdRelativeFileName           
 
         $mdPath=Join-Path $contentPath $mdRelativePath
+        Write-Debug "mdPath=$mdPath" 
 
         $title="Weekends from $originCity ($origin) to $destinationCity ($destination)"
         $description="Available weekend excursions from $originCity of $originCountry to $destinationCity of $destinationCountry arranged by "
@@ -219,6 +231,7 @@ $renderFlightsBlock={
     {
         New-Item $mdPath -ItemType File -Force | Out-Null
         $markdown|Out-File $mdPath -Encoding ASCII -Force
+        Write-Verbose "Saved $mdPath"
     }
 }
 
@@ -234,19 +247,26 @@ try
 		Write-Warning "MarkdownPS module not found"
 		$env:PSModulePath+=";$PSScriptRoot\Modules"
 	}
+    Write-Verbose "env:PSModulePath is ready"
+    $env:PSModulePath -split ';' |Write-Verbose
 
     $date=Get-Date -Format "yyyyMMdd"
     $exportPath=Join-Path $env:TEMP $date
+    Write-Verbose "exportPath=$exportPath"
 
     $flightFilePath=Get-ChildItem -Path $exportPath -Exclude @("Airports.json","Cities.json","Countries.json")
     $flights=@()
     $flightFilePath|ForEach-Object {
         $flights+=$_|Get-Content|ConvertFrom-Json
+        Write-Verbose "Read $($_.FullName)"
     }
 
     $airports=Get-Content -Path (Join-Path $exportPath "Airports.json")| ConvertFrom-Json
+    Write-Verbose "Read airports"
     $cities=Get-Content -Path (Join-Path $exportPath "Cities.json") | ConvertFrom-Json
+    Write-Verbose "Read cities"
     $countries=Get-Content -Path (Join-Path $exportPath "Countries.json")| ConvertFrom-Json
+    Write-Verbose "Read countries"
 
     $uniqueIATACodes= $flights|Select-Object -ExpandProperty Origin -Unique
     if(-not ($uniqueIATACodes.GetType().IsArray))
@@ -255,6 +275,7 @@ try
     }
     $uniqueIATACodes+= $flights|Select-Object -ExpandProperty Destination -Unique
     $uniqueIATACode=$uniqueIATACodes|Select-Object -Unique
+    Write-Verbose "uniqueIATACode=$uniqueIATACode"
 
     $processedLocations=@()
     $uniqueIATACodes|ForEach-Object {

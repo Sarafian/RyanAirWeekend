@@ -11,16 +11,19 @@ param (
 )
 
 
-
+Write-Debug "Remove existing Export.* jobs"
 Get-Job -Name "Export.*" |Remove-Job -Force
+Write-Debug "Removed existing Export.* jobs"
 
 #region import commandlets
+Write-Debug "Import cmdlets"
 
 . "$PSScriptRoot\CmdLets\Badges\New-DateBadge.ps1"
 
 . "$PSScriptRoot\CmdLets\Date\Get-WeekDay.ps1"
 . "$PSScriptRoot\CmdLets\Date\New-WeekendExcursionSettings.ps1"
 . "$PSScriptRoot\CmdLets\Date\Test-WeekDayZone.ps1"
+Write-Verbose "Imported cmdlets"
 #endregion
 
 $weekendSettings=New-WeekendExcursionSettings
@@ -35,6 +38,7 @@ else
 {
     New-Item $exportPath -ItemType Directory |Out-Null
 }
+Write-Verbose "$exportPath is ready"
 
 #region export block
 $exportBlock={
@@ -62,7 +66,9 @@ $exportBlock={
     }
 
     $fileName="$Origin-$Destination.json"
+    Write-Debug "fileName=$fileName"
     $filePath=Join-Path $exportPath $fileName
+    Write-Debug "filePath=$filePath"
     try
     {
         $fromDate=Get-Date
@@ -77,11 +83,13 @@ $exportBlock={
             Write-Warning "Setting latest date to $LastFlightDate"
             $toDate=$LastFlightDate
         }
+        Write-Verbose "Normalized date"
 
         $fridayDates=Get-WeekDay -From $fromDate -To $toDate -DayOfWeek Friday
         $flights=@()
         foreach($friday in $fridayDates)
         {
+            Write-Debug "Process friday $friday"
             $temp=$Origin | Get-RyanAirFlights -Destination $Destination -DateOut $friday -FlexDaysOut 1 -DateIn $friday.AddDays(2) -FlexDaysIn 1
             $validOutbound=$temp|Where-Object {$_.Origin -eq $Origin}|Where-Object { 
                 $validOnFriday=Test-WeekDayZone -Date $_.From -DayOfWeek Friday -FromHours $weekendSettings.OutboundEarliestFriday
@@ -93,6 +101,8 @@ $exportBlock={
                 $validOnMonday=Test-WeekDayZone -Date $_.To -DayOfWeek Monday -ToHours $weekendSettings.InboundLatestMonday
                 return $validOnSunday -or $validOnMonday
             }
+            Write-Verbose "validOutbound.Count=$($validOutbound.Count)"
+            Write-Verbose "validInbound.Count=$($validInbound.Count)"
             if(($validOutbound.Count -eq 0) -or ($validInbound.Count -eq 0))
             {
                 continue
@@ -117,9 +127,12 @@ $exportBlock={
                 }}
             }
         }
+        Write-Verbose "flights.Count=$($flights.Count)"
         if($flights.Count -gt 0)
         {
+            Write-Debug "filePath=$filePath"
             $flights|ConvertTo-Json|Out-File $filePath
+            Write-Verbose "Saved $filePath"
         }
     }
     catch
@@ -144,26 +157,34 @@ try
 		$env:PSModulePath+=";$PSScriptRoot\Modules"
 	}
 
+    Write-Verbose "env:PSModulePath is ready"
+    $env:PSModulePath -split ';' |Write-Verbose
+
     $airports=Get-RyanAirCommon -Type Airports
     $airports|ConvertTo-Json |Out-File (Join-Path $exportPath "Airports.json")
+    Write-Verbose "Saved airports"
+
     $cities=Get-RyanAirCommon -Type Cities
     $cities|ConvertTo-Json |Out-File (Join-Path $exportPath "Cities.json")
+    Write-Verbose "Saved cities"
 
     $countries=Get-RyanAirCommon -Type Countries
     $countries|ConvertTo-Json |Out-File (Join-Path $exportPath "Countries.json")
+    Write-Verbose "Saved countries"
 
     $iataCodes=$airports | Select-Object -ExpandProperty IataCode
 
     if($Origin)
     {
         $origins=$iataCodes|Where-Object {$Origin -contains $_}
+        Write-Verbose "Filtered with $Origin"
     }
     else
     {
         $origins=$iataCodes
     }
-
     $schedules= $origins | Get-RyanAirSchedules
+    Write-Verbose "Got Schedules"
     $schedulesByOrigin=$schedules | Group-Object Origin
     
     if($AsParallel)
@@ -184,7 +205,10 @@ try
     {
         $schedulesByOrigin | ForEach-Object {
             $origin=$_.Name
+            Write-Verbose "origin=$origin"
+
             $_.Group | ForEach-Object {
+                Write-Verbose "_.Destination=$($_.Destination)"
                 Invoke-Command -ScriptBlock $exportBlock -ArgumentList $origin,$_.Destination,$_.FirstFlightDate,$_.LastFlightDate
             }
         }
