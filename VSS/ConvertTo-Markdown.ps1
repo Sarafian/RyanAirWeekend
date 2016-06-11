@@ -259,15 +259,15 @@ try
     $flights=@()
     $flightFilePath|ForEach-Object {
         Write-Verbose "Reading $($_.FullName)"
-        $flights+=$_|Get-Content|ConvertFrom-Json
+        $flights+=$_|Get-Content -Raw |ConvertFrom-Json
         Write-Verbose "Read $($_.FullName)"
     }
 
-    $airports=Get-Content -Path (Join-Path $exportPath "Airports.json")| ConvertFrom-Json
+    $airports=Get-Content -Path (Join-Path $exportPath "Airports.json")  -Raw| ConvertFrom-Json
     Write-Verbose "Read airports"
-    $cities=Get-Content -Path (Join-Path $exportPath "Cities.json") | ConvertFrom-Json
+    $cities=Get-Content -Path (Join-Path $exportPath "Cities.json") -Raw| ConvertFrom-Json
     Write-Verbose "Read cities"
-    $countries=Get-Content -Path (Join-Path $exportPath "Countries.json")| ConvertFrom-Json
+    $countries=Get-Content -Path (Join-Path $exportPath "Countries.json") -Raw| ConvertFrom-Json
     Write-Verbose "Read countries"
 
     $uniqueIATACodes= $flights|Select-Object -ExpandProperty Origin -Unique
