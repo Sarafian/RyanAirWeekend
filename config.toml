@@ -37,4 +37,4 @@ googleAnalytics = "UA-78815014-1"
 [[menu.main]]
     name = "Github"
     url = "https://github.com/Sarafian/RyanAirWeekend/"
-    weight = 2		
+    weight = 3		
