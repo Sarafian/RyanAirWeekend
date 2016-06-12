@@ -2868,12 +2868,12 @@
 
 	header p {
 		font-family: "Raleway", Helvetica, sans-serif;
-		font-size: 0.7em;
-		font-weight: 400;
-		letter-spacing: 0.25em;
-		line-height: 2.5;
+		font-size: 1.3em;
+		/* font-weight: 400;  */
+		letter-spacing: 0.10em;
+		/* line-height: 2.5; */
 		margin-top: -1em;
-		text-transform: uppercase;
+		/* text-transform: uppercase; */
 	}
 
 /* Table */

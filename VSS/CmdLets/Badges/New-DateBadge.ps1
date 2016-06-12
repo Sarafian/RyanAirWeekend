@@ -1,4 +1,6 @@
 function New-DateBadge {
     $utcDate=(Get-Date).ToUniversalTime()
-    New-MDImage -Subject "Last update (UTC)" -Status $utcDate.ToString() -Color lightgrey
+    $timeZoneInfo=[system.TimeZoneInfo]::FindSystemTimeZoneById("W. Europe Standard Time")
+    $date=[System.TimeZoneInfo]::ConvertTime($utcDate,[System.TimeZoneInfo]::Utc,$timeZoneInfo)
+    New-MDImage -Subject "Last update ($($timeZoneInfo.Id))" -Status $date.ToString() -Color blue
 }

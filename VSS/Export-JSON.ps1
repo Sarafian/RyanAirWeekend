@@ -18,6 +18,7 @@ Write-Debug "Removed existing Export.* jobs"
 #region import commandlets
 Write-Debug "Import cmdlets"
 
+. "$PSScriptRoot\CmdLets\Session\Set-CultureInvariant.ps1"
 . "$PSScriptRoot\CmdLets\Badges\New-DateBadge.ps1"
 
 . "$PSScriptRoot\CmdLets\Date\Get-WeekDay.ps1"
@@ -25,6 +26,8 @@ Write-Debug "Import cmdlets"
 . "$PSScriptRoot\CmdLets\Date\Test-WeekDayZone.ps1"
 Write-Verbose "Imported cmdlets"
 #endregion
+
+Set-CultureInvariant
 
 $weekendSettings=New-WeekendExcursionSettings
 

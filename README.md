@@ -6,11 +6,17 @@
 | **develop** | ![developstatus](https://asarafian.visualstudio.com/_apis/public/build/definitions/d49ceb99-ba17-40dd-beb5-01203465975d/19/badge)
 
 
+## Repository in progress
 The repository is ![](https://img.shields.io/badge/Important-In%20Progress-orange.svg). Items remaining
 
-- Clear up dependencies
-- Automate build from VSTS
 - Improve the web site
+  - Improve the text in each page
+  - Add footer and general information
+  - Create a blog post in [sarafian.github.io](https://sarafian.github.io/)
+  - Layout
+- Add feedback link
+- Fix some share buttons
+- Optimize performance. Overcome the 30 minutes execution time restriction by [Visual Studio Team Services](https://visualstudio.com/ "Visual Studio Team Services") hosted agents.
 
 ## Introduction
 
@@ -21,7 +27,7 @@ I like short city weekend trips. Often I travel with [Ryan Air](https://www.ryan
   - Depart from destination on Sunday evening or arrive home on Monday early morning before work.
 - Price. A weekend before or after doesn't really matter as long as the price is right.
 
-This repository is to automate the generation of [Ryan Air weekends](https://sarafian.github.io/RyanAirWeekend).
+This repository is to automate the generation of [Ryan Air weekend](https://sarafian.github.io/RyanAirWeekend).
 
 ## Dependencies
 
