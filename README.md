@@ -11,13 +11,12 @@ The repository is ![](https://img.shields.io/badge/Important-In%20Progress-orang
 
 - Improve the web site
   - Improve the text in each page
-  - Move some metadata in the upper right corner
   - Add footer and general information
-  - Add some static pages
-  - Add a link to this repository
   - Create a blog post in [sarafian.github.io](https://sarafian.github.io/)
+  - Layout
 - Add feedback link
 - Fix some share buttons
+- Optimize performance. Overcome the 30 minutes execution time restriction by [Visual Studio Team Services](https://visualstudio.com/ "Visual Studio Team Services") hosted agents.
 
 ## Introduction
 

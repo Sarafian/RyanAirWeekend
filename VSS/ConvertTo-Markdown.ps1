@@ -22,6 +22,7 @@ Write-Verbose "$contentPath is ready"
 #region import commandlets
 Write-Debug "Import cmdlets"
 
+. "$PSScriptRoot\CmdLets\Session\Set-CultureInvariant.ps1"
 . "$PSScriptRoot\CmdLets\Badges\New-DateBadge.ps1"
 if($MockHugo)
 {
@@ -39,6 +40,8 @@ else
 . "$PSScriptRoot\CmdLets\Date\Test-WeekDayZone.ps1"
 Write-Verbose "Imported cmdlets"
 #endregion
+
+Set-CultuteInvariant
 
 $weekendSettings=New-WeekendExcursionSettings
 Write-Verbose "weekendSettings is ready"
@@ -78,14 +81,19 @@ $renderFlightsBlock={
         $mdPath=Join-Path $contentPath $mdRelativePath
         Write-Debug "mdPath=$mdPath" 
 
-        $title="Weekends from $originCity ($origin) to $destinationCity ($destination)"
-        $description="Available weekend excursions from $originCity of $originCountry to $destinationCity of $destinationCountry arranged by "
+        $maximumRegularFare=($flights | Measure -Maximum -Property RegularFare).Maximum
+        $minimumRegularFare=($flights | Measure -Minimum -Property RegularFare).Minimum
+
+        $title="Weekends from $originCity ($origin) of $originCountry to $destinationCity ($destination) of $destinationCountry"
+        $description="Available valid weekend excursions arranged by "
         switch ($GroupMethod)
         {
-            'ByWeekend' {$description+="weekend"}
-            'ByFare' {$description+="Fare price"}
+            'ByWeekend' {$description+="weekend."}
+            'ByFare' {$description+="fare price."}
         }
-        
+        $badgeMinimumRegularFare=New-MDImage -Subject "Lowest" -Status ("{0:N2}" -f $minimumRegularFare) -Color green
+        $badgeMaximumRegularFare=New-MDImage -Subject "Highest" -Status ("{0:N2}" -f $maximumRegularFare) -Color red
+        $description+=" Prices range from $badgeMinimumRegularFare to $badgeMaximumRegularFare."
         $metadata=@{
             origin=$origin
             originCity=$originCity
@@ -111,36 +119,12 @@ $renderFlightsBlock={
 
         $markdown=New-HugoFrontMatter -Title $title -Description $description -IsRoot $false -Metadata $metadata
 
-        $markdown+=New-MDHeader "Price zones" -Level 2
-        $markdown+=New-MDParagraph
-                
-        $maximumRegularFare=($flights | Measure -Maximum -Property RegularFare).Maximum
-        $minimumRegularFare=($flights | Measure -Minimum -Property RegularFare).Minimum
-
         $regular25=$minimumRegularFare+($maximumRegularFare-$minimumRegularFare)*0.25
         $regular50=$minimumRegularFare+($maximumRegularFare-$minimumRegularFare)*0.50
         $regular75=$minimumRegularFare+($maximumRegularFare-$minimumRegularFare)*0.75
 
-        $lines=@(
-            "For this destination the cheapest round trip regular fare is  "+ ("{0:N2}" -f $minimumRegularFare)
-            " and the most expensive "+ ("{0:N2}" -f $maximumRegularFare)
-            ". The prices are split and marked based on the following maximums:"
-        )
-        $markdown+=$lines|New-MDParagraph
-        $markdown+=New-MDParagraph
-        $zones=@(
-            New-MDImage -Subject "Low" -Status ("{0:N2}" -f $minimumRegularFare +" - "+ "{0:N2}" -f $regular25) -Color green
-            New-MDImage -Subject "Normal" -Status ("{0:N2}" -f $regular25 +" - "+ "{0:N2}" -f $regular50) -Color blue
-            New-MDImage -Subject "High" -Status ("{0:N2}" -f $regular50 +" - "+ "{0:N2}" -f $regular75) -Color orange
-            New-MDImage -Subject "Highest" -Status ("{0:N2}" -f $regular25 +" - "+ "{0:N2}" -f $maximumRegularFare) -Color red
-        )
-        $markdown+=$zones|New-MDList -Style Ordered
-        $markdown+=New-MDParagraph
-
         if($GroupMethod -eq "ByWeekend")
         {
-            $markdown+=New-MDHeader "Grouped by weekend"
-            $markdown+=New-MDParagraph
             $flights|Sort-Object -Property Friday|Group-Object -Property Friday |ForEach-Object {
                 $markdown+=New-MDHeader "Weekend of $($_.Values[0].ToShortDateString())" -Level 2
                 $markdown+=New-MDParagraph
@@ -183,8 +167,6 @@ $renderFlightsBlock={
 
         if($GroupMethod -eq "ByFare")
         {
-            $markdown+=New-MDHeader "Ordered by Fare"
-            $markdown+=New-MDParagraph
             $table=$flights|Sort-Object -Property RegularFare|Select-Object -Property @{Name="Weekend";Expression={
                 "$($_.Friday.AddDays(1).Day)-$($_.Friday.AddDays(2).Day)/$($_.Friday.Month)/$($_.Friday.Year)"
             }},@{Name="Outbound Day";Expression={
@@ -262,6 +244,7 @@ try
         $flights+=$_|Get-Content -Raw |ConvertFrom-Json
         Write-Verbose "Read $($_.FullName)"
     }
+    $mdPath=Join-Path $contentPath "Index.md"
 
     $airports=Get-Content -Path (Join-Path $exportPath "Airports.json")  -Raw| ConvertFrom-Json
     Write-Verbose "Read airports"
@@ -303,38 +286,12 @@ try
         $_ | Add-Member -NotePropertyName DestinationCity -NotePropertyValue $destinationLocation.City
     }
 
-
-    $mdPath=Join-Path $contentPath "Index.md"
-    $minMaxDate=$flights|Measure-Object -Property Friday -Maximum -Minimum
-    #$minDate=$minMaxDate.Minimum.Value.ToShortDate()
-    #$maxDate=$minMaxDate.Maximum.Value.ToShortDate()
+    $ryanAirLink=New-MDLink -Text "RyanAir" -Link "https://ryanair.com/"
 
     $title="Ryan Air Weekend excursions"
-    #$description="Available Ryan Air weekends from $minDate to $maxDate"
-    $description="Available Ryan Air weekends."
+    $description="Possible $ryanAirLink weekend excursions organized by origin and destination."
 
     $markdown=New-HugoFrontMatter -Title $title -Description $description -IsRoot $true
-
-    $markdown+=New-MDParagraph "Flights are filtered with the following conditions:"
-    $lines=@(
-       "Depart to destination after Friday $($weekendSettings.OutboundEarliestFriday):00"
-       "Arrive at destination until Saturday $($weekendSettings.OutboundLatestSaturday):00"
-       "Depart from destination after Sunday $($weekendSettings.InboundEarliestSunday):00"
-       "Return until Monday $($weekendSettings.InboundLatestMonday):00"
-    )
-    $markdown+=New-MDParagraph
-    $markdown+=$lines |New-MDList -Style Unordered
-    $markdown+=New-MDParagraph
-
-    $markdown+=New-MDParagraph "Countries processed:"
-    $markdown+=New-MDParagraph
-    $markdown+=($processedLocations|Select-Object -ExpandProperty Country) -join ', ' |  New-MDQuote 
-    $markdown+=New-MDParagraph
-
-    $markdown+=New-MDParagraph "Cities processed:"
-    $markdown+=New-MDParagraph
-    $markdown+=($processedLocations|Select-Object -ExpandProperty City) -join ', ' |  New-MDQuote 
-    $markdown+=New-MDParagraph
 
     $flights|Group-Object Origin|ForEach-Object {
         $origin=$_.Name
@@ -368,6 +325,158 @@ try
         Invoke-Command -ScriptBlock $renderFlightsBlock -ArgumentList ("ByFare",$_.Group)
     }
     $markdown+=New-MDParagraph
+}
+catch
+{
+    Write-Error $_
+    $markdown+=New-MDParagraph "Error captured"
+    $markdown+=New-MDQuote $_
+    exit -1
+}
+finally
+{
+    $markdown+=New-MDParagraph
+    $markdown+=New-DateBadge
+    $markdown|Out-File $mdPath -Encoding ASCII -Force
+    Write-verbose "Saved $mdPath"
+}
+#endregion
+
+#region About.md
+try
+{
+    $mdPath=Join-Path $contentPath "About.md"
+
+    $title="about"
+    $description="Introduction and documentation for this site."
+
+    $markdown=New-HugoFrontMatter -Title $title -Description $description -IsRoot $false
+
+    $markdown+=New-MDHeader "Introduction" -Level 2
+    $markdown+=New-MDParagraph
+
+    $ryanAirLink=New-MDLink -Text "RyanAir" -Link "https://ryanair.com/" -Title "RyanAir"
+    $ryanAirImage=New-MDImage -Source "/RyanAir.jpg" -AltText "RyanAir" -Title "RyanAir"
+    $lines=@(
+        '{{< img-post path="/img/" file="RyanAir.jpg" alt="RyanAir" type="left" >}}'
+        "This website shows valid weekend flights with $ryanAirLink organized by origin, destination and then by price or weekend."
+        "With this web site you can quickly identify a possible weekend city trip from the airports in your vicinity."
+        "When interested in a specific weekend then you browse the page organized "+("by weekend"|New-MDCharacterStyle -Style Bold)+"."
+        "When interested in the best price then you browse the page organized "+("by fair price"|New-MDCharacterStyle -Style Bold)+"."
+    )
+    $markdown+=$lines |New-MDParagraph
+
+    $markdown+=New-MDHeader "Why are the prices color coded?" -Level 2
+    $markdown+=New-MDParagraph
+    $lines=@(
+        "Color coding enables you to quickly identify the most competitive weekends. This is how it works. "
+        "For every combination of origin and destination the minimum and maximum fair is calculated and then split in four zones by 25% each. "
+        "For example if the lowest price is 50.00 and the maximum is 250 then the color coding will be ranked like this:"
+    )
+    $markdown+=$lines|New-MDParagraph
+    $minimumRegularFare=50
+    $maximumRegularFare=250
+    $regular25=$minimumRegularFare+($maximumRegularFare-$minimumRegularFare)*0.25
+    $regular50=$minimumRegularFare+($maximumRegularFare-$minimumRegularFare)*0.50
+    $regular75=$minimumRegularFare+($maximumRegularFare-$minimumRegularFare)*0.75
+
+    $zones=@(
+        New-MDImage -Subject "Low" -Status ("{0:N2}" -f $minimumRegularFare +" - "+ "{0:N2}" -f $regular25) -Color green
+        New-MDImage -Subject "Normal" -Status ("{0:N2}" -f $regular25 +" - "+ "{0:N2}" -f $regular50) -Color blue
+        New-MDImage -Subject "High" -Status ("{0:N2}" -f $regular50 +" - "+ "{0:N2}" -f $regular75) -Color orange
+        New-MDImage -Subject "Highest" -Status ("{0:N2}" -f $regular75 +" - "+ "{0:N2}" -f $maximumRegularFare) -Color red
+    )
+    $markdown+=$zones|New-MDList -Style Ordered
+    $markdown+=New-MDParagraph
+
+    $markdown+=New-MDHeader "What defines a valid weekend?" -Level 2
+    $markdown+=New-MDParagraph
+    $markdown+="This site is focused on short city trips during a weekend. A valid journey is one that:"|New-MDParagraph
+    $markdown+=New-MDParagraph
+
+    $lines=@(
+       "Departs to target city from Friday $($weekendSettings.OutboundEarliestFriday):00 or arrives there until Saturday $($weekendSettings.OutboundLatestSaturday):00"
+       "Departs from target city from Sunday $($weekendSettings.InboundEarliestSunday):00 or arrives back until Monday $($weekendSettings.InboundLatestMonday):00"
+    )
+    $markdown+=$lines |New-MDList -Style Unordered
+    $markdown+=New-MDParagraph
+
+    $markdown+=New-MDHeader "Range of data" -Level 2
+    $markdown+=New-MDParagraph
+    $months=$minMaxDate.Maximum.Date.Subtract($minMaxDate.Minimum.Date).Months
+    $lines=@(
+        "Earliest flight date is on $($minMaxDate.Minimum.Date.ToShortDateString()) and latest on $($minMaxDate.Maximum.Date.ToShortDateString()). "
+        New-MDParagraph
+        "Location processed are:"
+    )
+    $markdown+=$lines|New-MDParagraph
+    $markdown+=$processedLocations|Select-Object -Property @{Name="Name";Expression={
+            "$($_.City |New-MDCharacterStyle -Style Bold) ($($_.IATA)) in $($_.Country)"
+        }} | Select-Object -ExpandProperty Name| New-MDList -Style Unordered 
+    $markdown+=New-MDParagraph
+
+    $markdown+=New-MDHeader "Technical information" -Level 2
+    $markdown+=New-MDParagraph
+
+    $githubLink=New-MDLink -Text "Github" -Link "https://github.com/" -Title "Github"
+    $githubPagesLink=New-MDLink -Text "Github pages" -Link "https://pages.github.com/" -Title "Github pages"
+    $hugoLink=New-MDLink -Text "Hugo" -Link "https://gohugo.io/" -Title "Hugo"
+    $repositoryLink=New-MDLink -Text "RyanAirWeekend" -Link "https://github.com/Sarafian/RyanAirWeekend/" -Title "RyanAirWeekend"
+    $readmeLink=New-MDLink -Text "README.md" -Link "https://github.com/Sarafian/RyanAirWeekend/blob/master/README.md" -Title "README.md"
+    $markdownPSLink=New-MDLink -Text "MarkdownPS" -Link "https://www.powershellgallery.com/packages/MarkdownPS/" -Title "MarkdownPS"
+    $ryanAirPSLink=New-MDLink -Text "RyanAirPS" -Link "https://www.powershellgallery.com/packages/RyanAirPS/" -Title "RyanAirPS"
+    $visualStudioTeamServicesLink=New-MDLink -Text "Visual Studio Team Services" -Link "https://visualstudio.com/" -Title "Visual Studio Team Services"
+    $lines=@(
+        "All data owned by $ryanAirLink are extracted using their api. "
+        "The site is powered by $githubPagesLink and $hugoLink. "
+        "$visualStudioTeamServicesLink drives the continuous build. "
+        "Code is available in github repository $repositoryLink."
+    )
+    $markdown+=$lines|New-MDList -Style Unordered
+    $markdown+=New-MDParagraph
+    $markdown+="The process is implemented in PowerShell and is split in the following steps:"|New-MDParagraph
+    $markdown+=New-MDParagraph
+
+    $steps=@(
+        "PowerShell module $ryanAirPSLink extracts the data from $ryanAirLink"
+        "PowerShell module $markdownPSLink helps scripts render markdown files as $hugoLink content."
+        "$hugoLink processes the markdown content and generates static html files."
+        "Scripts push the html files to gh-pages branch in $repositoryLink"
+    )
+
+    $markdown+=$steps|New-MDList -Style Ordered
+    $markdown+=New-MDParagraph
+
+    $markdown+="Read more about the process in $readmeLink"|New-MDParagraph
+    $markdown+=New-MDParagraph
+
+    $markdown+=New-MDHeader "Site in development. Why only limited airports processed?" -Level 2
+    $markdown+=New-MDParagraph
+
+    $lines=@(
+        "Please read more about what needs to be done in $readmeLink . "
+    )
+    
+    $markdown+=$lines|New-MDParagraph
+    $markdown+=New-MDParagraph
+    
+    $lines=@(
+        "Due to unforseen limitations with $visualStudioTeamServicesLink hosted agents, the current pipeline can only process a limited number of airports."
+        New-MDParagraph
+        "Since the original focus had been for airports in and around Belgium, the current airports processed are:" 
+    )
+    
+    $markdown+=$lines|New-MDParagraph
+    $markdown+=New-MDParagraph
+
+    $uniqueOrigin=$flights|Select-Object -ExpandProperty Origin -Unique
+    $markdown+=$processedLocations|Where-Object {$uniqueOrigin -contains $_.IATA}| Select-Object -Property @{Name="Name";Expression={
+            "$($_.City |New-MDCharacterStyle -Style Bold) ($($_.IATA)) in $($_.Country)"
+        }} | Select-Object -ExpandProperty Name| New-MDList -Style Unordered 
+    $markdown+=New-MDParagraph
+
+
+
 }
 catch
 {

@@ -8,7 +8,7 @@ googleAnalytics = "UA-78815014-1"
 [params]
     description          = "Personal site of Alex Sarafian"
     # This will appear on the top left of the navigation bar
-    navbarTitle          = "Root"
+    # navbarTitle          = "Root"
 
 # Optional Params
     loadFavicon          = false
@@ -28,5 +28,13 @@ googleAnalytics = "UA-78815014-1"
 # You can use identifier to prepend a font awesome icon to your text
 [[menu.main]]
     name = "Home"
-    url = "/Index/"
+    url = "/"
     weight = 1
+[[menu.main]]
+    name = "About"
+    url = "/About/"
+    weight = 2	
+[[menu.main]]
+    name = "Github"
+    url = "https://github.com/Sarafian/RyanAirWeekend/"
+    weight = 2		
