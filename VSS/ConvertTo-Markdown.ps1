@@ -403,6 +403,7 @@ try
 
     $markdown+=New-MDHeader "Range of data" -Level 2
     $markdown+=New-MDParagraph
+    $minMaxDate=$flights| Measure-Object -Property "OutboundFrom" -Minimum -Maximum
     $months=$minMaxDate.Maximum.Date.Subtract($minMaxDate.Minimum.Date).Months
     $lines=@(
         "Earliest flight date is on $($minMaxDate.Minimum.Date.ToShortDateString()) and latest on $($minMaxDate.Maximum.Date.ToShortDateString()). "
