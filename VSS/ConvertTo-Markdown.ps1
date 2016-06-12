@@ -41,7 +41,7 @@ else
 Write-Verbose "Imported cmdlets"
 #endregion
 
-Set-CultuteInvariant
+Set-CultureInvariant
 
 $weekendSettings=New-WeekendExcursionSettings
 Write-Verbose "weekendSettings is ready"

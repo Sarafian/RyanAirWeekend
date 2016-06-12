@@ -1,4 +1,4 @@
-function Set-CultuteInvariant {
+function Set-CultureInvariant {
 	Process {
 		$culture=[System.Globalization.CultureInfo]::InvariantCulture
 		[System.Threading.Thread]::CurrentThread.CurrentUICulture = $culture
