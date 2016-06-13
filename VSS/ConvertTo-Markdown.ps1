@@ -22,7 +22,7 @@ Write-Verbose "$contentPath is ready"
 #region import commandlets
 Write-Debug "Import cmdlets"
 
-. "$PSScriptRoot\CmdLets\Session\Set-CultureInvariant.ps1"
+. "$PSScriptRoot\CmdLets\Session\Initialize-CurrentCulture.ps1"
 . "$PSScriptRoot\CmdLets\Badges\New-DateBadge.ps1"
 if($MockHugo)
 {
@@ -41,7 +41,7 @@ else
 Write-Verbose "Imported cmdlets"
 #endregion
 
-Set-CultureInvariant
+Initialize-CurrentCulture
 
 $weekendSettings=New-WeekendExcursionSettings
 Write-Verbose "weekendSettings is ready"
@@ -244,7 +244,7 @@ try
         $flights+=$_|Get-Content -Raw |ConvertFrom-Json
         Write-Verbose "Read $($_.FullName)"
     }
-    $mdPath=Join-Path $contentPath "Index.md"
+    $mdPath=Join-Path $contentPath "index.md"
 
     $airports=Get-Content -Path (Join-Path $exportPath "Airports.json")  -Raw| ConvertFrom-Json
     Write-Verbose "Read airports"
@@ -345,7 +345,7 @@ finally
 #region About.md
 try
 {
-    $mdPath=Join-Path $contentPath "About.md"
+    $mdPath=Join-Path $contentPath "about.md"
 
     $title="about"
     $description="Introduction and documentation for this site."

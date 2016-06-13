@@ -6,10 +6,10 @@ Param (
 )
 If ($PSBoundParameters.Debug -eq $true) { $DebugPreference='continue' }
 
-. "$PSScriptRoot\CmdLets\Session\Set-CultureInvariant.ps1"
+. "$PSScriptRoot\CmdLets\Session\Initialize-CurrentCulture.ps1"
 . "$PSScriptRoot\Cmdlets\Git\Invoke-Git.ps1"
 
-Set-CultureInvariant
+Initialize-CurrentCulture
 
 try
 {
