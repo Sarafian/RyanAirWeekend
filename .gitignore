@@ -1,3 +1,6 @@
 public/
 content/
+VSS/ExportJson/ExportJson/bin/
+VSS/ExportJson/ExportJson/obj/
 ~*.bak
+*.suo
