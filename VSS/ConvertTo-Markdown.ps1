@@ -345,7 +345,7 @@ finally
 #region About.md
 try
 {
-    $mdPath=Join-Path $contentPath "about.md"
+    $mdPath=Join-Path $contentPath "About.md"
 
     $title="about"
     $description="Introduction and documentation for this site. Page was generated on $((Get-Date).ToShortDateString())"
@@ -450,35 +450,6 @@ try
 
     $markdown+="Read more about the process in $readmeLink"|New-MDParagraph
     $markdown+=New-MDParagraph
-
-<#    
-    $markdown+=New-MDHeader "Site in development. Why only limited airports processed?" -Level 2
-    $markdown+=New-MDParagraph
-
-    $lines=@(
-        "Please read more about what needs to be done in $readmeLink . "
-    )
-    
-    $markdown+=$lines|New-MDParagraph
-    $markdown+=New-MDParagraph
-    
-    $lines=@(
-        "Due to unforseen limitations with $visualStudioTeamServicesLink hosted agents, the current pipeline can only process a limited number of airports."
-        New-MDParagraph
-        "Since the original focus had been for airports in and around Belgium, the current airports processed are:" 
-    )
-    
-    $markdown+=$lines|New-MDParagraph
-    $markdown+=New-MDParagraph
-
-    $uniqueOrigin=$flights|Select-Object -ExpandProperty Origin -Unique
-    $markdown+=$processedLocations|Where-Object {$uniqueOrigin -contains $_.IATA}| Select-Object -Property @{Name="Name";Expression={
-            "$($_.City |New-MDCharacterStyle -Style Bold) ($($_.IATA)) in $($_.Country)"
-        }} | Select-Object -ExpandProperty Name| New-MDList -Style Unordered 
-    $markdown+=New-MDParagraph
-#>
-
-
 }
 catch
 {
