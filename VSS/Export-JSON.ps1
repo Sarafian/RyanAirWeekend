@@ -11,10 +11,6 @@ param (
 )
 If ($PSBoundParameters.Debug -eq $true) { $DebugPreference='continue' }
 
-Write-Debug "Remove existing Export.* jobs"
-Get-Job -Name "Export.*" |Remove-Job -Force
-Write-Debug "Removed existing Export.* jobs"
-
 #region import commandlets
 Write-Debug "Import cmdlets"
 
