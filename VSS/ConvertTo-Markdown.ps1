@@ -350,7 +350,7 @@ try
     $title="about"
     $description="Introduction and documentation for this site. Page was generated on $((Get-Date).ToShortDateString())"
 
-    $markdown=New-HugoFrontMatter -Title $title -Description $description -IsRoot $false
+    $markdown=New-HugoFrontMatter -Title $title -Description $description -IsRoot $false -Metadata @{slug="about"}
 
     $markdown+=New-MDHeader "Introduction" -Level 2
     $markdown+=New-MDParagraph
