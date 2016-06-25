@@ -87,7 +87,7 @@ try
         $arguments+="-AsParallel"
     }
 
-    # & $exportJsonPath -ArgumentList $arguments
+    & $exportJsonPath -ArgumentList $arguments
 }
 catch
 {
