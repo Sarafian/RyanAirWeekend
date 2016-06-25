@@ -7,16 +7,10 @@
 
 
 ## Repository in progress
-The repository is ![](https://img.shields.io/badge/Important-In%20Progress-orange.svg). Items remaining
+The repository code needs still some improvements. Items remaining
 
-- Improve the web site
-  - Improve the text in each page
-  - Add footer and general information
-  - Create a blog post in [sarafian.github.io](https://sarafian.github.io/)
-  - Layout
 - Add feedback link
 - Fix some share buttons
-- Optimize performance. Overcome the 30 minutes execution time restriction by [Visual Studio Team Services](https://visualstudio.com/ "Visual Studio Team Services") hosted agents.
 
 ## Introduction
 
@@ -27,26 +21,30 @@ I like short city weekend trips. Often I travel with [Ryan Air](https://www.ryan
   - Depart from destination on Sunday evening or arrive home on Monday early morning before work.
 - Price. A weekend before or after doesn't really matter as long as the price is right.
 
-This repository is to automate the generation of [Ryan Air weekend](https://sarafian.github.io/RyanAirWeekend).
+This repository powers [Ryan Air weekend](https://sarafian.github.io/RyanAirWeekend).
 
 ## Dependencies
 
 This repository depends on my two PowerShell modules. 
 
-- My PowerShell module [MarkdownPS](https://www.powershellgallery.com/packages/MarkdownPS/) makes it easy to render markdown content.
-- My PowerShell module [RyanAirPS](https://www.powershellgallery.com/packages/RyanAirPS/) queries the RyanAir API. (*Not Published yet*)
+- [MarkdownPS](https://www.powershellgallery.com/packages/MarkdownPS/) which makes easy to render markdown content.
+- [RyanAirPS](https://www.powershellgallery.com/packages/RyanAirPS/) which queries the RyanAir API. 
+It turned out that PowerShell was too slow for my requirements, so the time consuming functionality provided by [RyanAirPS](https://www.powershellgallery.com/packages/RyanAirPS/) was ported to pure .NET. 
 
-As with my [blog](https://sarafian.github.io/) the site is also powered by [Hugo](https://gohugo.io/) using a simplified version of [Hugo Future Imperfect](http://themes.gohugo.io/future-imperfect/) theme. Actually the theme is derived from my already modified version that powers my own [blog](https://sarafian.github.io/).
+As with my [blog](https://sarafian.github.io/) the site is also powered by [Hugo](https://gohugo.io/) using a simplified version of [Hugo Future Imperfect](http://themes.gohugo.io/future-imperfect/) theme. 
+Actually the theme is derived from my already modified version that powers my own [blog](https://sarafian.github.io/).
 
 Badges are powered by [shields.io](http://shields.io/)
 
 ## Execution order
 
-1. Parse the RyanAir open api and store json files in a temp folder.
-1. Process the json files and generate markdown files. Files can be generated in two formats
+1. Build the [ExportJSON](VSS/ExportJson/ExportJson.sln) project.
+1. Figure out all airport code that RyanAir flies from and the schedule for each destination. [![RyanAirPS](https://img.shields.io/badge/Powered%20by-RyanAirPS-blue.svg)](https://www.powershellgallery.com/packages/RyanAirPS/)
+1. Parse the RyanAir open api and store json files in a temp folder. 
+1. Process the json files and generate markdown files. Files can be generated in two formats.  [![MarkdownPS](https://img.shields.io/badge/Powered%20by-MarkdownPS-blue.svg)](https://www.powershellgallery.com/packages/MarkdownPS/)
   - Hugo suitable with front matter
   - Node package [MarkServ](https://www.npmjs.com/package/markserv).
-1. Generate static html files using Hugo
+1. Generate static html. Powered by 
 1. Update `gh-pages` with new files
 
 The non Hugo compatible files were the original implementation. They are now used for debugging with my custom MarkServ windows service as explained [here](https://sarafian.github.io/post/simple markdown web server for windows/).
@@ -58,7 +56,7 @@ The non Hugo compatible files were the original implementation. They are now use
   - [Github](github.com/Sarafian/MarkdownPS) 
   - [Relevant articles](https://sarafian.github.io/post/markdownps/markdownps/)
 - RyanAirPS
-  - [PowerShell Gallery](https://www.powershellgallery.com/packages/RyanAirPS/) ![](https://img.shields.io/badge/Important-Not%20yet%20published-rewd.svg)
+  - [PowerShell Gallery](https://www.powershellgallery.com/packages/RyanAirPS/)
   - [Github](github.com/Sarafian/RyanAirPS)
 - Hugo 
   - [Hugo](https://gohugo.io/) 
