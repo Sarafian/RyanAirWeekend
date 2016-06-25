@@ -24,6 +24,7 @@ Write-Debug "Import cmdlets"
 
 . "$PSScriptRoot\CmdLets\Session\Initialize-CurrentCulture.ps1"
 . "$PSScriptRoot\CmdLets\Badges\New-DateBadge.ps1"
+. "$PSScriptRoot\CmdLets\Date\New-WeekendExcursionSettings.ps1"
 if($MockHugo)
 {
     $hugoFolderName="Hugo.Mock"
@@ -35,9 +36,6 @@ else
 . "$PSScriptRoot\CmdLets\$hugoFolderName\ConvertTo-HugoRef.ps1"
 . "$PSScriptRoot\CmdLets\$hugoFolderName\New-HugoFrontMatter.ps1"
 
-. "$PSScriptRoot\CmdLets\Date\Get-WeekDay.ps1"
-. "$PSScriptRoot\CmdLets\Date\New-WeekendExcursionSettings.ps1"
-. "$PSScriptRoot\CmdLets\Date\Test-WeekDayZone.ps1"
 Write-Verbose "Imported cmdlets"
 #endregion
 
@@ -259,8 +257,8 @@ try
         $uniqueIATACodes=@($uniqueIATACodes)    
     }
     $uniqueIATACodes+= $flights|Select-Object -ExpandProperty Destination -Unique
-    $uniqueIATACode=$uniqueIATACodes|Select-Object -Unique
-    Write-Verbose "uniqueIATACode=$uniqueIATACode"
+    $uniqueIATACodes=$uniqueIATACodes|Select-Object -Unique
+    Write-Verbose "uniqueIATACodes=$uniqueIATACodes"
 
     $processedLocations=@()
     $uniqueIATACodes|ForEach-Object {
@@ -271,6 +269,7 @@ try
         $hash["Country"]=$countries| Where-Object -Property Code -EQ $airport.CountryCode|Select-Object -ExpandProperty Name
         $processedLocations+=New-Object PSObject –Prop $hash
     }
+    Write-Debug "processedLocations.Count=$($processedLocations.Count)"
 
     $flights|ForEach-Object {
         $_.Friday=Get-Date $_.Friday
@@ -285,6 +284,7 @@ try
         $_ | Add-Member -NotePropertyName DestinationCountry -NotePropertyValue $destinationLocation.Country
         $_ | Add-Member -NotePropertyName DestinationCity -NotePropertyValue $destinationLocation.City
     }
+    Write-Debug "flights adjusted"
 
     $ryanAirLink=New-MDLink -Text "RyanAir" -Link "https://ryanair.com/"
 
@@ -316,7 +316,7 @@ try
 
         $markdown+=New-MDHeader "Destinations from $($originLocation.City) ($origin) in $($originLocation.Country)" -Level 2
         $markdown+=New-MDParagraph
-        $markdown+=$table |Sort-Object Country | New-MDTable -Columns ([ordered]@{Destination="left";"Grouped By Weekend"="right";"Ordered By Fare"="right"})
+        $markdown+=$table | New-MDTable -Columns ([ordered]@{Destination="left";"Grouped By Weekend"="right";"Ordered By Fare"="right"})
         $markdown+=New-MDParagraph
 
     }
@@ -348,7 +348,7 @@ try
     $mdPath=Join-Path $contentPath "about.md"
 
     $title="about"
-    $description="Introduction and documentation for this site."
+    $description="Introduction and documentation for this site. Page was generated on $((Get-Date).ToShortDateString())"
 
     $markdown=New-HugoFrontMatter -Title $title -Description $description -IsRoot $false
 
@@ -451,6 +451,7 @@ try
     $markdown+="Read more about the process in $readmeLink"|New-MDParagraph
     $markdown+=New-MDParagraph
 
+<#    
     $markdown+=New-MDHeader "Site in development. Why only limited airports processed?" -Level 2
     $markdown+=New-MDParagraph
 
@@ -475,7 +476,7 @@ try
             "$($_.City |New-MDCharacterStyle -Style Bold) ($($_.IATA)) in $($_.Country)"
         }} | Select-Object -ExpandProperty Name| New-MDList -Style Unordered 
     $markdown+=New-MDParagraph
-
+#>
 
 
 }
