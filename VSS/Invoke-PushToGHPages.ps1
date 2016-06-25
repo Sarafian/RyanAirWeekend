@@ -59,6 +59,16 @@ try
     #region add origin
             
     $arguments=@(
+        "config"
+        "core.ignorecase"
+        "false"
+    )
+    Invoke-Git -Reason "Make git case sensitive" -ArgumentsList $arguments
+    #endregion
+
+    #region add origin
+            
+    $arguments=@(
         "remote"
         "add"
         $githubRemoteName

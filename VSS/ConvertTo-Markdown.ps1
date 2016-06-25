@@ -345,7 +345,7 @@ finally
 #region About.md
 try
 {
-    $mdPath=Join-Path $contentPath "About.md"
+    $mdPath=Join-Path $contentPath "about.md"
 
     $title="about"
     $description="Introduction and documentation for this site. Page was generated on $((Get-Date).ToShortDateString())"
