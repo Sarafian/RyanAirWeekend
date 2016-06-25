@@ -178,6 +178,7 @@ namespace ExportJson
                                     FlightNumber = flight.flightNumber,
                                     From = DateTime.Parse(flight.time[0]),
                                     To = DateTime.Parse(flight.time[1]),
+                                    RegularFare=flight.regularFare.fares.First(f=>f.type=="ADT").amount
                                 });
                             }
                             else
