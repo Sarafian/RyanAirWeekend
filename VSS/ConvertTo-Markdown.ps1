@@ -345,12 +345,12 @@ finally
 #region About.md
 try
 {
-    $mdPath=Join-Path $contentPath "About.md"
+    $mdPath=Join-Path $contentPath "about.md"
 
     $title="about"
     $description="Introduction and documentation for this site. Page was generated on $((Get-Date).ToShortDateString())"
 
-    $markdown=New-HugoFrontMatter -Title $title -Description $description -IsRoot $false -Metadata @{slug="about"}
+    $markdown=New-HugoFrontMatter -Title $title -Description $description -IsRoot $false
 
     $markdown+=New-MDHeader "Introduction" -Level 2
     $markdown+=New-MDParagraph
