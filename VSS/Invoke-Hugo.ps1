@@ -4,10 +4,10 @@ try
 {
     Push-Location "$PSScriptRoot\.."
 
-    $hugoName="hugo_0.15_windows_amd64"
+    $hugoName="hugo_0.16_windows-64bit"
 
     #region download hugo
-    $url = "https://github.com/spf13/hugo/releases/download/v0.15/$hugoName.zip"
+    $url = "https://github.com/spf13/hugo/releases/download/v0.16/$hugoName.zip"
     $downloadPath = Join-Path $env:TEMP "$hugoName.zip"
     if(Test-Path ($downloadPath))
     {
@@ -37,7 +37,7 @@ try
     #endregion
 
     #region build
-    $hugoPath=Join-Path $expandPath "$hugoName.exe"
+    $hugoPath=Join-Path $expandPath "hugo.exe"
     Write-Verbose "hugoPath=$hugoPath"
 
     Write-Debug "Executing $hugoPath"

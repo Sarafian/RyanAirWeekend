@@ -285,6 +285,8 @@ try
         $_ | Add-Member -NotePropertyName DestinationCity -NotePropertyValue $destinationLocation.City
     }
     Write-Debug "flights adjusted"
+    $flights=$flights|Sort-Object OriginCountry
+    Write-Debug "flights sorted per country"
 
     $ryanAirLink=New-MDLink -Text "RyanAir" -Link "https://ryanair.com/"
 
@@ -293,32 +295,52 @@ try
 
     $markdown=New-HugoFrontMatter -Title $title -Description $description -IsRoot $true
 
-    $flights|Group-Object Origin|ForEach-Object {
-        $origin=$_.Name
-        $originLocation=$processedLocations|Where-Object -Property IATA -EQ $origin
+    $markdown+=New-MDHeader "Quick jump list {#top}"-Level 2
+    $markdown+=New-MDParagraph
+    $markdown+=$flights|Select-Object -ExpandProperty OriginCountry -Unique| ForEach-Object {
+      New-MDLink -Text $_ -Link (ConvertTo-HugoRef -RelLink "#$_")
+    }|New-MDList -Style Unordered
+    $markdown+=New-MDParagraph
 
-        $table=$_.Group|Sort-Object -Property DestinationCity |Select-Object -ExpandProperty Destination -Unique| Select-Object -Property @{Name="Destination";Expression={
-            $destinationLocation=$processedLocations|Where-Object -Property IATA -EQ $_
-            New-MDCharacterStyle -Text $destinationLocation.City -Style Bold
-            " "
-            "("+(New-MDCharacterStyle -Text $destinationLocation.Country -Style Italic)+")"
-        }},@{Name="Grouped By Weekend";Expression={
-            $destinationLocation=$processedLocations|Where-Object -Property IATA -EQ $_
-            $relativeFolderPath="From\$($originLocation.Country)\$($originLocation.City)-$origin\To\$($destinationLocation.Country)"
-            $mdRelativePath=Join-Path $relativeFolderPath "$($destinationLocation.City)-$_.Flights.ByWeekend.md" |ConvertTo-HugoRef          
-            New-MDLink -Text "Open Flights" -Link $mdRelativePath
-        }},@{Name="Ordered By Fare";Expression={
-            $destinationLocation=$processedLocations|Where-Object -Property IATA -EQ $_
-            $relativeFolderPath="From\$($originLocation.Country)\$($originLocation.City)-$origin\To\$($destinationLocation.Country)"
-            $mdRelativePath=Join-Path $relativeFolderPath "$($destinationLocation.City)-$_.Flights.ByFare.md" |ConvertTo-HugoRef
-            New-MDLink -Text "Open Flights" -Link $mdRelativePath
-        }}
+    $flights|Group-Object OriginCountry|ForEach-Object {
+        $originCountry=$_.Name
+        $flightsInCountry=$_.Group |Sort-Object OriginCity
 
-        $markdown+=New-MDHeader "Destinations from $($originLocation.City) ($origin) in $($originLocation.Country)" -Level 2
-        $markdown+=New-MDParagraph
-        $markdown+=$table | New-MDTable -Columns ([ordered]@{Destination="left";"Grouped By Weekend"="right";"Ordered By Fare"="right"})
+        $achors+=
+        $markdown+=New-MDHeader "$originCountry {#$originCountry}"-Level 2
         $markdown+=New-MDParagraph
 
+        $flightsInCountry|Group-Object Origin | ForEach-Object {
+            $origin=$_.Name
+            $originCity=$_.Group|Select-Object -ExpandProperty OriginCity -First 1
+            $flightsInCity=$_.Group |Sort-Object DestinationCity
+
+            $markdown+=New-MDHeader "$originCity ($origin)" -Level 3
+            $markdown+=New-MDParagraph
+            #$markdown+="Flights departing from $originCity ($origin)" |New-MDParagraph
+
+            $table=$flightsInCity |Select-Object -ExpandProperty Destination -Unique| Select-Object -Property @{Name="Destination";Expression={
+                $destinationLocation=$processedLocations|Where-Object -Property IATA -EQ $_
+                New-MDCharacterStyle -Text $destinationLocation.City -Style Bold
+                " "
+                "("+(New-MDCharacterStyle -Text $destinationLocation.Country -Style Italic)+")"
+            }},@{Name="Grouped By Weekend";Expression={
+                $destinationLocation=$processedLocations|Where-Object -Property IATA -EQ $_
+                $relativeFolderPath="From\$($originCountry)\$($originCity)-$origin\To\$($destinationLocation.Country)"
+                $mdRelativePath=Join-Path $relativeFolderPath "$($destinationLocation.City)-$_.Flights.ByWeekend.md" |ConvertTo-HugoRef          
+                New-MDLink -Text "Open Flights" -Link $mdRelativePath
+            }},@{Name="Ordered By Fare";Expression={
+                $destinationLocation=$processedLocations|Where-Object -Property IATA -EQ $_
+                $relativeFolderPath="From\$($originCountry)\$($originCity)-$origin\To\$($destinationLocation.Country)"
+                $mdRelativePath=Join-Path $relativeFolderPath "$($destinationLocation.City)-$_.Flights.ByFare.md" |ConvertTo-HugoRef
+                New-MDLink -Text "Open Flights" -Link $mdRelativePath
+            }}
+
+            $markdown+=$table | New-MDTable -Columns ([ordered]@{Destination="left";"Grouped By Weekend"="right";"Ordered By Fare"="right"})
+            $markdown+=New-MDParagraph
+            $markdown+=New-MDLink -Text "Back to the top" -Link (ConvertTo-HugoRef -RelLink "#top")
+            $markdown+=New-MDParagraph
+        }
     }
     $flights|Group-Object Origin,Destination|ForEach-Object {
         Invoke-Command -ScriptBlock $renderFlightsBlock -ArgumentList ("ByWeekend",$_.Group)
