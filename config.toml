@@ -38,3 +38,7 @@ googleAnalytics = "UA-78815014-1"
     name = "Github"
     url = "https://github.com/Sarafian/RyanAirWeekend/"
     weight = 3		
+[[menu.main]]
+    name = "Have an idea?"
+    url = "http://ryanairweekend.idea.informer.com/"
+    weight = 4
