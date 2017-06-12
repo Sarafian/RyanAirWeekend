@@ -1,3 +1,7 @@
+# Deprycated. For archive purposes
+
+Unfortunatly **this is deprycated**. RyanAir has implemented throttling on their API and therefore this site cannot build any longer. It was nice as long as it lasted. Good challenge also. Learned a lot for PowerShell.
+
 # Ryan Air Weekends 
 
 | Branch | Status
