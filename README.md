@@ -4,12 +4,6 @@ Unfortunatly **this is deprycated**. RyanAir has implemented throttling on their
 
 # Ryan Air Weekends 
 
-| Branch | Status
-| ---------- | ---------
-| **master** | ![masterstatus](https://asarafian.visualstudio.com/_apis/public/build/definitions/d49ceb99-ba17-40dd-beb5-01203465975d/20/badge)
-| **develop** | ![developstatus](https://asarafian.visualstudio.com/_apis/public/build/definitions/d49ceb99-ba17-40dd-beb5-01203465975d/19/badge)
-
-
 ## Repository in progress
 The repository code needs still some improvements. Items remaining
 
